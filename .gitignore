@@ -5,3 +5,5 @@ coverage
 .idea
 .env
 .env.test
+.env.development
+.env.production
