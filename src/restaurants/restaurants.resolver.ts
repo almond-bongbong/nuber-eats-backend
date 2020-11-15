@@ -21,10 +21,16 @@ export class RestaurantsResolver {
   }
 
   @Mutation(() => Boolean)
-  updateRestaurant(
-    @Args('id') id: number,
+  async updateRestaurant(
+    @Args('id') id: string,
     @Args('data') updateRestaurantInput: UpdateRestaurantInputType,
   ) {
-    return true;
+    try {
+      await this.restaurantsService.update(id, updateRestaurantInput);
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
 }

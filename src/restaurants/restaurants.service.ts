@@ -21,7 +21,8 @@ export class RestaurantsService {
     return this.restaurantRepository.save(newRestaurant);
   }
 
-  update(id: number, data: UpdateRestaurantInputType) {
-
+  async update(id: string, data: UpdateRestaurantInputType) {
+    const findRestaurant = await this.restaurantRepository.findOne(id);
+    return this.restaurantRepository.update({ id }, { ...data });
   }
 }
