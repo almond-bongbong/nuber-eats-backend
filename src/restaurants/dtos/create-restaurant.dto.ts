@@ -1,5 +1,5 @@
 import { InputType, OmitType } from '@nestjs/graphql';
-import { Restaurant } from '../entities/restaurants.entity';
+import Restaurant from '../entities/restaurants.entity';
 import { Length } from 'class-validator';
 
 @InputType()

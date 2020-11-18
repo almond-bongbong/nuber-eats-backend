@@ -1,17 +1,16 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { Length } from 'class-validator';
 
-@ObjectType()
 @Entity()
-export class Restaurant {
+@ObjectType()
+export default class Restaurant {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => String)
   id: string;
 
   @Column()
   @Field(() => String)
-  @Length(5, 10)
+  // @Length(5, 10)
   name: string;
 
   @Column()
