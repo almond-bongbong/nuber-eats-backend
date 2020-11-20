@@ -5,6 +5,7 @@ import {
   CreateAccountInput,
   CreateAccountOutput,
 } from './dtos/create-account-dto';
+import { LoginInput, LoginOutput } from './dtos/login.dto';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -20,15 +21,29 @@ export class UsersResolver {
     @Args('data') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
     try {
-      const error = await this.usersService.createAccount(createAccountInput);
-
-      if (error) return { ok: false, error };
+      await this.usersService.createAccount(createAccountInput);
       return { ok: true };
     } catch (error) {
-      console.log(error);
+      console.log(error.name, error.type);
       return {
         ok: false,
-        error,
+        error: error.message || "Couldn't create account",
+      };
+    }
+  }
+
+  @Mutation(() => LoginOutput)
+  async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
+    try {
+      const token = await this.usersService.login(loginInput);
+      return {
+        ok: true,
+        token,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message || 'Some Error',
       };
     }
   }

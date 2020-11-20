@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
+import { JwtModule } from './jwt/jwt.module';
 import User from './users/entities/user.entity';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -23,6 +24,7 @@ const isProduction = process.env.NODE_ENV === 'production';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_DATABASE: Joi.string().required(),
+        PRIVATE_KEY: Joi.string().required(),
       }),
       ignoreEnvFile: isProduction,
       envFilePath: isDevelopment ? '.env.development' : '.env.test',
@@ -41,8 +43,12 @@ const isProduction = process.env.NODE_ENV === 'production';
     GraphQLModule.forRoot({
       autoSchemaFile: true,
     }),
+    JwtModule.forRoot({
+      privateKey: process.env.PRIVATE_KEY,
+    }),
     UsersModule,
     CommonModule,
+    JwtModule,
   ],
   controllers: [],
   providers: [],
