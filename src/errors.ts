@@ -36,3 +36,9 @@ export class WrongPasswordError extends CustomError {
     super('WRONG_PASSWORD', 'Wrong password');
   }
 }
+
+export class UnAuthorizedError extends CustomError {
+  constructor() {
+    super('UNAUTHORIZED', 'Unauthorized token');
+  }
+}

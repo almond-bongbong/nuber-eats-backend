@@ -1,3 +1,8 @@
 export interface JwtModuleOptions {
-  privateKey: string;
+  privateKey?: string;
+}
+
+export interface JwtPayload {
+  id: string;
+  iat: number;
 }
