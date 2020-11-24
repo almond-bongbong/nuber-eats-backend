@@ -9,7 +9,6 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
-import { CommonModule } from './common/common.module';
 import { JwtModule } from './jwt/jwt.module';
 import User from './users/entities/user.entity';
 import { JwtMiddleware } from './jwt/jwt.middleware';
