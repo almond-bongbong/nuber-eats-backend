@@ -1,10 +1,5 @@
 import * as Joi from 'joi';
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -13,6 +8,7 @@ import { JwtModule } from './jwt/jwt.module';
 import User from './users/entities/user.entity';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
+import { Verification } from './users/entities/verification.entity';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
@@ -44,7 +40,7 @@ const isProduction = process.env.NODE_ENV === 'production';
       database: process.env.DB_DATABASE,
       synchronize: isDevelopment,
       logging: isDevelopment,
-      entities: [User],
+      entities: [User, Verification],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,

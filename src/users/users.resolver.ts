@@ -9,6 +9,8 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/auth-user.decorator';
+import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -55,5 +57,51 @@ export class UsersResolver {
   @UseGuards(AuthGuard)
   me(@CurrentUser() currentUser: User) {
     return currentUser;
+  }
+
+  @UseGuards(AuthGuard)
+  @Query(() => UserProfileOutput, { nullable: true })
+  async userProfile(
+    @Args() userProfileInput: UserProfileInput,
+  ): Promise<UserProfileOutput> {
+    try {
+      const findUser = await this.usersService.findById(
+        userProfileInput.userId,
+      );
+      return findUser
+        ? {
+            ok: true,
+            user: findUser,
+          }
+        : {
+            ok: false,
+            error: 'User Not Found',
+          };
+    } catch (e) {
+      return {
+        ok: false,
+        error: 'User Not Found',
+      };
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Mutation(() => EditProfileOutput)
+  async editProfile(
+    @CurrentUser() currentUser: User,
+    @Args('input') editProfileInput: EditProfileInput,
+  ): Promise<EditProfileOutput> {
+    try {
+      await this.usersService.editProfile(currentUser.id, editProfileInput);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        ok: false,
+        error,
+      };
+    }
   }
 }
