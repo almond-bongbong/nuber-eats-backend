@@ -11,11 +11,14 @@ import {
 import { LoginInput } from './dtos/login.dto';
 import { JwtService } from '../jwt/jwt.service';
 import { EditProfileInput } from './dtos/edit-profile.dto';
+import { Verification } from './entities/verification.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(Verification)
+    private readonly verificationRepository: Repository<Verification>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -29,7 +32,11 @@ export class UsersService {
     }
 
     const newUser = this.usersRepository.create(createAccountInput);
-    await this.usersRepository.save(newUser);
+    const savedUser = await this.usersRepository.save(newUser);
+    const newVerification = this.verificationRepository.create({
+      user: savedUser,
+    });
+    await this.verificationRepository.save(newVerification);
   }
 
   async login(loginInput: LoginInput) {
@@ -55,9 +62,35 @@ export class UsersService {
 
   async editProfile(userId: string, editProfileInput: EditProfileInput) {
     const findUser = await this.findById(userId);
-    if (editProfileInput.email) findUser.email = editProfileInput.email;
-    if (editProfileInput.password)
+    if (editProfileInput.email) {
+      findUser.email = editProfileInput.email;
+      findUser.verified = false;
+      await this.verificationRepository.save(
+        this.verificationRepository.create({ user: findUser }),
+      );
+    }
+    if (editProfileInput.password) {
       findUser.password = editProfileInput.password;
+    }
     return this.usersRepository.save(findUser);
+  }
+
+  async verifyEmail(code: string): Promise<boolean> {
+    const findVerification = await this.verificationRepository.findOne(
+      {
+        code,
+      },
+      {
+        relations: ['user'],
+      },
+    );
+
+    if (findVerification) {
+      findVerification.user.verified = true;
+      await this.usersRepository.save(findVerification.user);
+      return true;
+    }
+
+    return false;
   }
 }
