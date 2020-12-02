@@ -110,10 +110,17 @@ export class UsersResolver {
   async verifyEmail(
     @Args('input') verifyEmailInput: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {
-    await this.usersService.verifyEmail(verifyEmailInput.code);
-
-    return {
-      ok: true,
-    };
+    try {
+      const result = await this.usersService.verifyEmail(verifyEmailInput.code);
+      return {
+        ok: result,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        ok: false,
+        error: 'Error',
+      };
+    }
   }
 }

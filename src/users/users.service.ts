@@ -40,9 +40,14 @@ export class UsersService {
   }
 
   async login(loginInput: LoginInput) {
-    const user = await this.usersRepository.findOne({
-      email: loginInput.email,
-    });
+    const user = await this.usersRepository.findOne(
+      {
+        email: loginInput.email,
+      },
+      {
+        select: ['id', 'password'],
+      },
+    );
 
     if (!user) {
       throw new UserNotFoundError();
