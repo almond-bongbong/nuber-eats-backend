@@ -24,13 +24,13 @@ export class UsersResolver {
 
   @Mutation(() => CreateAccountOutput)
   async createAccount(
-    @Args('data') createAccountInput: CreateAccountInput,
+    @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
     try {
       await this.usersService.createAccount(createAccountInput);
       return { ok: true };
     } catch (error) {
-      console.log(error.name, error.type);
+      console.log(error);
       return {
         ok: false,
         error: error.message || "Couldn't create account",
@@ -111,15 +111,15 @@ export class UsersResolver {
     @Args('input') verifyEmailInput: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {
     try {
-      const result = await this.usersService.verifyEmail(verifyEmailInput.code);
+      await this.usersService.verifyEmail(verifyEmailInput.code);
       return {
-        ok: result,
+        ok: true,
       };
     } catch (error) {
       console.log(error);
       return {
         ok: false,
-        error: 'Error',
+        error: error.message || 'Error',
       };
     }
   }

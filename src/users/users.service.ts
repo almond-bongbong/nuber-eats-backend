@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateAccountInput } from './dtos/create-account-dto';
 import {
   AlreadyUsedEmailError,
+  NotFoundVerification,
   UserNotFoundError,
   WrongPasswordError,
 } from '../errors';
@@ -80,7 +81,7 @@ export class UsersService {
     return this.usersRepository.save(findUser);
   }
 
-  async verifyEmail(code: string): Promise<boolean> {
+  async verifyEmail(code: string): Promise<void> {
     const findVerification = await this.verificationRepository.findOne(
       {
         code,
@@ -90,12 +91,12 @@ export class UsersService {
       },
     );
 
-    if (findVerification) {
-      findVerification.user.verified = true;
-      await this.usersRepository.save(findVerification.user);
-      return true;
+    if (!findVerification) {
+      throw new NotFoundVerification();
     }
 
-    return false;
+    findVerification.user.verified = true;
+    await this.usersRepository.save(findVerification.user);
+    await this.verificationRepository.delete(findVerification.id);
   }
 }

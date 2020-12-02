@@ -42,3 +42,9 @@ export class UnAuthorizedError extends CustomError {
     super('UNAUTHORIZED', 'Unauthorized token');
   }
 }
+
+export class NotFoundVerification extends CustomError {
+  constructor() {
+    super('NOT_FOUND_VERIFICATION', 'Not found verification');
+  }
+}
