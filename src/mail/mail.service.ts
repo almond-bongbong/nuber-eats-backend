@@ -2,26 +2,27 @@ import { Inject, Injectable } from '@nestjs/common';
 import got from 'got';
 import * as FormData from 'form-data';
 import { CONFIG_OPTIONS } from '../common/constants';
-import { MailModuleOptions } from './mail.interface';
+import { MailModuleOptions, MailVar } from './mail.interface';
 
 @Injectable()
 export class MailService {
   constructor(
     @Inject(CONFIG_OPTIONS) private readonly options: MailModuleOptions,
-  ) {
-    console.log(options);
-    this.sendEmail('test', 'content', 'dlcndaks12@naver.com');
-  }
+  ) {}
 
-  private async sendEmail(subject: string, template: string, to: string) {
+  private async sendEmail(
+    subject: string,
+    content: string,
+    mailVars: MailVar[],
+    to: string,
+  ) {
     const form = new FormData();
-    form.append('from', `Excited User <mailgun@${this.options.domain}>`);
+    form.append('from', `Max from Nuber eats <mailgun@${this.options.domain}>`);
     form.append('to', to);
     form.append('subject', subject);
-    // form.append('text', content);
-    form.append('template', template);
-    form.append('v:username', 'max');
-    form.append('v:code', '1234');
+    // form.append('template', template);
+    mailVars.forEach(({ key, value }) => form.append(`v:${key}`, value));
+    form.append('html', content);
 
     try {
       const response = await got(
@@ -41,5 +42,17 @@ export class MailService {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  sendVerificationEmail(email: string, code: string) {
+    this.sendEmail(
+      'Verify Your Email',
+      `Hello, ${email}<br/>Click to http://localhost:3000/confirm?code=${code}`,
+      [
+        { key: 'username', value: email },
+        { key: 'code', value: code },
+      ],
+      email,
+    );
   }
 }

@@ -15,6 +15,9 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
 import { Verification } from './users/entities/verification.entity';
 import { MailModule } from './mail/mail.module';
+import Restaurant from './restaurants/entities/restaurants.entity';
+import { Category } from './restaurants/entities/category.entity';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
@@ -49,7 +52,7 @@ const isProduction = process.env.NODE_ENV === 'production';
       database: process.env.DB_DATABASE,
       synchronize: isDevelopment,
       logging: isDevelopment,
-      entities: [User, Verification],
+      entities: [User, Verification, Restaurant, Category],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
@@ -66,6 +69,7 @@ const isProduction = process.env.NODE_ENV === 'production';
     UsersModule,
     AuthModule,
     MailModule,
+    RestaurantsModule,
   ],
   controllers: [],
   providers: [],
