@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateAccountInput } from './dtos/create-account-dto';
 import {
   AlreadyUsedEmailError,
-  NotFoundVerification,
+  NotFoundError,
   UserNotFoundError,
   WrongPasswordError,
 } from '../errors';
@@ -104,7 +104,7 @@ export class UsersService {
     );
 
     if (!findVerification) {
-      throw new NotFoundVerification();
+      throw new NotFoundError();
     }
 
     findVerification.user.verified = true;

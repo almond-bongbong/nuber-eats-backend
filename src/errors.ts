@@ -43,8 +43,8 @@ export class UnAuthorizedError extends CustomError {
   }
 }
 
-export class NotFoundVerification extends CustomError {
+export class NotFoundError extends CustomError {
   constructor() {
-    super('NOT_FOUND_VERIFICATION', 'Not found verification');
+    super('NOT_FOUND', 'Not found Resource');
   }
 }

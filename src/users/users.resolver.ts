@@ -8,10 +8,10 @@ import {
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
-import { CurrentUser } from '../auth/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
+import { Auth, CurrentUser } from '../auth/auth.decorator';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -54,13 +54,13 @@ export class UsersResolver {
     }
   }
 
+  @Auth()
   @Query(() => User)
-  @UseGuards(AuthGuard)
   me(@CurrentUser() currentUser: User) {
     return currentUser;
   }
 
-  @UseGuards(AuthGuard)
+  @Auth()
   @Query(() => UserProfileOutput, { nullable: true })
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
