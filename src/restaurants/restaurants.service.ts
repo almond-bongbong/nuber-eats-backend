@@ -14,6 +14,8 @@ import { CategoryInput } from './dtos/category.dto';
 import { RestaurantsInput } from './dtos/restaurants.dto';
 import { RestaurantInput } from './dtos/restaurant.dto';
 import { SearchRestaurantInput } from './dtos/search-restaurant.dto';
+import { CreateDishInput } from './dtos/create-dish.dto';
+import Dish from './entities/dish.entity';
 
 @Injectable()
 export class RestaurantsService {
@@ -23,6 +25,8 @@ export class RestaurantsService {
     @InjectRepository(Restaurant)
     private readonly restaurantRepository: Repository<Restaurant>,
     private readonly categoryRepository: CategoryRepository,
+    @InjectRepository(Dish)
+    private readonly dishRepository: Repository<Dish>,
   ) {
     this.restaurantsLoader = new DataLoader(
       async (categoryIds: string[]) => {
@@ -158,7 +162,9 @@ export class RestaurantsService {
   }
 
   findRestaurantById(restaurantInput: RestaurantInput) {
-    return this.restaurantRepository.findOne(restaurantInput.restaurantId);
+    return this.restaurantRepository.findOne(restaurantInput.restaurantId, {
+      relations: ['menu'],
+    });
   }
 
   async searchRestaurantByName(
@@ -171,5 +177,15 @@ export class RestaurantsService {
       skip: (searchRestaurantInput.page - 1) * 25,
       take: 25,
     });
+  }
+
+  async createDish(owner: User, createDishInput: CreateDishInput) {
+    const findRestaurant = await this.getRestaurantIfOwn(
+      owner,
+      createDishInput.restaurantId,
+    );
+    const newDish = this.dishRepository.create(createDishInput);
+    newDish.restaurant = findRestaurant;
+    await this.dishRepository.save(newDish);
   }
 }
