@@ -33,6 +33,8 @@ import {
 } from './dtos/search-restaurant.dto';
 import Dish from './entities/dish.entity';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
+import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
+import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 
 @Resolver(() => Restaurant)
 export class RestaurantsResolver {
@@ -243,6 +245,47 @@ export class DishResolver {
   ): Promise<CreateDishOutput> {
     try {
       await this.restaurantService.createDish(currentUser, createDishInput);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
+  }
+
+  @Auth(UserRole.OWNER)
+  @Mutation(() => EditDishOutput)
+  async editDish(
+    @CurrentUser() currentUser,
+    @Args('input') editDishInput: EditDishInput,
+  ): Promise<EditDishOutput> {
+    try {
+      await this.restaurantService.editDish(currentUser, editDishInput);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
+  }
+
+  @Auth(UserRole.OWNER)
+  @Mutation(() => DeleteDishOutput)
+  async deleteDish(
+    @CurrentUser() currentUser,
+    @Args('input') deleteDishInput: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
+    try {
+      await this.restaurantService.deleteDish(
+        currentUser,
+        deleteDishInput.dishId,
+      );
       return {
         ok: true,
       };

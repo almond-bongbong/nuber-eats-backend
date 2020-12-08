@@ -16,6 +16,7 @@ import { RestaurantInput } from './dtos/restaurant.dto';
 import { SearchRestaurantInput } from './dtos/search-restaurant.dto';
 import { CreateDishInput } from './dtos/create-dish.dto';
 import Dish from './entities/dish.entity';
+import { EditDishInput } from './dtos/edit-dish.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -53,16 +54,20 @@ export class RestaurantsService {
     const findRestaurant = await this.restaurantRepository.findOne(
       restaurantId,
     );
-
-    if (!findRestaurant) {
-      throw new NotFoundError();
-    }
-
-    if (findRestaurant.ownerId !== owner.id) {
-      throw new UnAuthorizedError();
-    }
+    if (!findRestaurant) throw new NotFoundError();
+    if (findRestaurant.ownerId !== owner.id) throw new UnAuthorizedError();
 
     return findRestaurant;
+  }
+
+  private async getDishIfOwn(owner: User, dishId: string): Promise<Dish> {
+    const findDish = await this.dishRepository.findOne(dishId, {
+      relations: ['restaurant'],
+    });
+    if (!findDish) throw new NotFoundError();
+    if (findDish.restaurant.ownerId !== owner.id) throw new UnAuthorizedError();
+
+    return findDish;
   }
 
   async createRestaurant(owner: User, input: CreateRestaurantInput) {
@@ -187,5 +192,19 @@ export class RestaurantsService {
     const newDish = this.dishRepository.create(createDishInput);
     newDish.restaurant = findRestaurant;
     await this.dishRepository.save(newDish);
+  }
+
+  async editDish(owner: User, editDish: EditDishInput) {
+    const findDish = await this.getDishIfOwn(owner, editDish.dishId);
+    if (editDish.name) findDish.name = editDish.name;
+    if (editDish.description) findDish.description = editDish.description;
+    if (editDish.price) findDish.price = editDish.price;
+    if (editDish.options) findDish.options = editDish.options;
+    await this.dishRepository.save(findDish);
+  }
+
+  async deleteDish(owner: User, dishId: string) {
+    const findDish = await this.getDishIfOwn(owner, dishId);
+    await this.dishRepository.delete(findDish.id);
   }
 }
