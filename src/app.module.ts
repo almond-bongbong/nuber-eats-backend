@@ -18,7 +18,10 @@ import { MailModule } from './mail/mail.module';
 import Restaurant from './restaurants/entities/restaurants.entity';
 import { Category } from './restaurants/entities/category.entity';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { OrdersModule } from './orders/orders.module';
 import Dish from './restaurants/entities/dish.entity';
+import Order from './orders/entities/order.entity';
+import { OrderItem } from './orders/entities/order-item.entity';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
@@ -53,7 +56,15 @@ const isProduction = process.env.NODE_ENV === 'production';
       database: process.env.DB_DATABASE,
       synchronize: isDevelopment,
       logging: isDevelopment,
-      entities: [User, Verification, Restaurant, Category, Dish],
+      entities: [
+        User,
+        Verification,
+        Restaurant,
+        Category,
+        Dish,
+        Order,
+        OrderItem,
+      ],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
@@ -71,6 +82,7 @@ const isProduction = process.env.NODE_ENV === 'production';
     AuthModule,
     MailModule,
     RestaurantsModule,
+    OrdersModule,
   ],
   controllers: [],
   providers: [],

@@ -6,6 +6,17 @@ export enum UserRole {
   DELIVERY = 'Delivery',
 }
 
+export enum OrderStatus {
+  Pending = 'Pending',
+  Cooking = 'Cooking',
+  PickedUp = 'PickedUp',
+  Delivered = 'Delivered',
+}
+
 registerEnumType(UserRole, {
   name: 'UserRole',
+});
+
+registerEnumType(OrderStatus, {
+  name: 'OrderStatus',
 });

@@ -6,7 +6,7 @@ import Restaurant from './restaurants.entity';
 
 @ObjectType()
 @InputType('DishChoiceInput', { isAbstract: true })
-class DishChoice {
+export class DishChoice {
   @Field(() => String)
   name: string;
 
@@ -16,7 +16,7 @@ class DishChoice {
 
 @ObjectType()
 @InputType('DishOptionInput', { isAbstract: true })
-class DishOption {
+export class DishOption {
   @Field(() => String)
   name: string;
 
@@ -54,7 +54,7 @@ export default class Dish extends CoreEntity {
 
   @ManyToOne(
     () => Restaurant,
-    (restaurant: Restaurant) => restaurant.menu,
+    restaurant => restaurant.menu,
     { onDelete: 'CASCADE' },
   )
   @Field(() => Restaurant)
