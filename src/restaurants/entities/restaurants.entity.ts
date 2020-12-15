@@ -52,7 +52,7 @@ export default class Restaurant extends CoreEntity {
 
   @OneToMany(
     () => Order,
-    order => order.customer,
+    order => order.restaurant,
     { nullable: true },
   )
   @Field(() => [Order], { nullable: true })

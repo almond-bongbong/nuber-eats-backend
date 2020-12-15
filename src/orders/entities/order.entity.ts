@@ -1,6 +1,13 @@
 import { Field, Float, ObjectType } from '@nestjs/graphql';
 import CoreEntity from '../../common/entities/core.entity';
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  RelationId,
+} from 'typeorm';
 import User from '../../users/entities/user.entity';
 import Restaurant from '../../restaurants/entities/restaurants.entity';
 import { OrderStatus } from '../../enums';
@@ -18,6 +25,9 @@ export default class Order extends CoreEntity {
   @Field(() => User, { nullable: true })
   customer?: User;
 
+  @RelationId((order: Order) => order.customer)
+  customerId?: string;
+
   @ManyToOne(
     () => User,
     user => user.rides,
@@ -25,6 +35,9 @@ export default class Order extends CoreEntity {
   )
   @Field(() => User, { nullable: true })
   driver?: User;
+
+  @RelationId((order: Order) => order.driver)
+  driverId?: string;
 
   @ManyToOne(
     () => Restaurant,
