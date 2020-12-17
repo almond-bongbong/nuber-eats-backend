@@ -9,8 +9,9 @@ import { NotFoundError, UnAuthorizedError } from '../errors';
 import { OrderItem } from './entities/order-item.entity';
 import Dish from '../restaurants/entities/dish.entity';
 import { GetOrdersInput } from './dtos/get-orders.dto';
-import { UserRole } from '../enums';
+import { OrderStatus, UserRole } from '../enums';
 import { GetOrderInput } from './dtos/get-order.dto';
+import { EditOrderInput } from './dtos/edit-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -107,10 +108,16 @@ export class OrdersService {
     return [];
   }
 
-  async getOrder(user: User, getOrderInput: GetOrderInput): Promise<Order> {
-    const findOrder = await this.ordersRepository.findOne(getOrderInput.id, {
-      relations: ['restaurant', 'items', 'items.dish'],
+  async getOrderIfRelatedUser(
+    user: User,
+    orderId: string,
+    relations: string[] = [],
+  ): Promise<Order> {
+    const findOrder = await this.ordersRepository.findOne(orderId, {
+      relations: ['restaurant', ...relations],
     });
+
+    if (!findOrder) throw new NotFoundError();
 
     if (
       findOrder.driverId !== user.id &&
@@ -121,5 +128,35 @@ export class OrdersService {
     }
 
     return findOrder;
+  }
+
+  async getOrder(user: User, getOrderInput: GetOrderInput): Promise<Order> {
+    return this.getOrderIfRelatedUser(user, getOrderInput.id, [
+      'items',
+      'items.dish',
+    ]);
+  }
+
+  async editOrder(user: User, editOrderInput: EditOrderInput) {
+    const findOrder = await this.getOrderIfRelatedUser(user, editOrderInput.id);
+
+    if (
+      user.role !== UserRole.OWNER &&
+      (editOrderInput.status === OrderStatus.Cooking ||
+        editOrderInput.status === OrderStatus.Cooked)
+    ) {
+      throw new UnAuthorizedError();
+    }
+
+    if (
+      user.role !== UserRole.DELIVERY &&
+      (editOrderInput.status === OrderStatus.PickedUp ||
+        editOrderInput.status === OrderStatus.Delivered)
+    ) {
+      throw new UnAuthorizedError();
+    }
+
+    findOrder.status = editOrderInput.status;
+    await this.ordersRepository.save(findOrder);
   }
 }

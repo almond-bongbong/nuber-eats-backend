@@ -7,6 +7,7 @@ import User from '../users/entities/user.entity';
 import { UserRole } from '../enums';
 import { GetOrdersInput, GetOrdersOutput } from './dtos/get-orders.dto';
 import { GetOrderInput, GetOrderOutput } from './dtos/get-order.dto';
+import { EditOrderInput, EditOrderOutput } from './dtos/edit-order.dto';
 
 @Resolver(() => Order)
 export class OrdersResolver {
@@ -58,10 +59,29 @@ export class OrdersResolver {
     @Args('input') getOrderInput: GetOrderInput,
   ): Promise<GetOrderOutput> {
     try {
-      const order = await this.ordersService.getOrder(currentUser, getOrderInput);
+      const order = await this.ordersService.getOrder(
+        currentUser,
+        getOrderInput,
+      );
       return {
         ok: true,
         order,
+      };
+    } catch (error) {
+      return { ok: false, error: error.message };
+    }
+  }
+
+  @Auth([UserRole.OWNER, UserRole.DELIVERY])
+  @Mutation(() => EditOrderOutput)
+  async editOrder(
+    @CurrentUser() currentUser: User,
+    @Args('input') editOrderInput: EditOrderInput,
+  ): Promise<EditOrderOutput> {
+    try {
+      await this.ordersService.editOrder(currentUser, editOrderInput);
+      return {
+        ok: true,
       };
     } catch (error) {
       return { ok: false, error: error.message };
