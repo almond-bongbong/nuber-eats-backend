@@ -16,6 +16,7 @@ import { OrdersModule } from './orders/orders.module';
 import Dish from './restaurants/entities/dish.entity';
 import Order from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
+import { CommonModule } from './common/common.module';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
@@ -74,6 +75,7 @@ const isProduction = process.env.NODE_ENV === 'production';
       domain: process.env.MAILGUN_DOMAIN_NAME,
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
     }),
+    CommonModule,
     UsersModule,
     AuthModule,
     MailModule,

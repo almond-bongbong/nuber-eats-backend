@@ -8,13 +8,23 @@ import { UserRole } from '../enums';
 import { GetOrdersInput, GetOrdersOutput } from './dtos/get-orders.dto';
 import { GetOrderInput, GetOrderOutput } from './dtos/get-order.dto';
 import { EditOrderInput, EditOrderOutput } from './dtos/edit-order.dto';
+import { Inject } from '@nestjs/common';
+import {
+  NEW_COOKED_ORDER,
+  NEW_ORDER_UPDATES,
+  NEW_PENDING_ORDER,
+  PUB_SUB,
+} from '../common/constants';
 import { PubSub } from 'graphql-subscriptions';
-
-const pubsub = new PubSub();
+import { OrderUpdatesInput } from './dtos/order-updates.dto';
+import { TakeOrderInput, TakeOrderOutput } from './dtos/take-order.dto';
 
 @Resolver(() => Order)
 export class OrdersResolver {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+    private readonly ordersService: OrdersService,
+  ) {}
 
   @Auth(UserRole.CLIENT)
   @Mutation(() => CreateOrderOutput)
@@ -91,17 +101,55 @@ export class OrdersResolver {
     }
   }
 
-  @Mutation(() => Boolean)
-  async potatoReady(): Promise<boolean> {
-    await pubsub.publish('hotPotatos', {
-      readyPotatos: 'ok',
-    });
-    return true;
+  @Auth(UserRole.OWNER)
+  @Subscription(() => Order, {
+    filter: ({ newPendingOrder }, _, { currentUser }) =>
+      newPendingOrder.restaurant.ownerId === currentUser.id,
+  })
+  newPendingOrder() {
+    return this.pubSub.asyncIterator(NEW_PENDING_ORDER);
   }
 
-  @Subscription(() => String)
-  readyPotatos(@CurrentUser() currentUser: User) {
-    console.log(currentUser);
-    return pubsub.asyncIterator('hotPotatos');
+  @Auth(UserRole.DELIVERY)
+  @Subscription(() => Order)
+  cookedOrder() {
+    return this.pubSub.asyncIterator(NEW_COOKED_ORDER);
+  }
+
+  @Auth()
+  @Subscription(() => Order, {
+    filter: (
+      { orderUpdates }: { orderUpdates: Order },
+      { input }: { input: OrderUpdatesInput },
+    ) => orderUpdates.id === input.id,
+  })
+  async orderUpdates(
+    @CurrentUser() currentUser: User,
+    @Args('input') orderUpdatesInput: OrderUpdatesInput,
+  ) {
+    await this.ordersService.getOrderIfRelatedUser(
+      currentUser,
+      orderUpdatesInput.id,
+    );
+    return this.pubSub.asyncIterator(NEW_ORDER_UPDATES);
+  }
+
+  @Auth(UserRole.DELIVERY)
+  @Mutation(() => TakeOrderOutput)
+  async takeOrder(
+    @CurrentUser() currentUser: User,
+    @Args('input') takeOrderInput: TakeOrderInput,
+  ): Promise<TakeOrderOutput> {
+    try {
+      await this.ordersService.takeOrder(currentUser, takeOrderInput);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
   }
 }

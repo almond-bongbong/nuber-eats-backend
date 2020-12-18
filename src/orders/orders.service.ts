@@ -1,17 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Order from './entities/order.entity';
 import { Repository } from 'typeorm';
 import User from '../users/entities/user.entity';
 import { CreateOrderInput } from './dtos/create-order.dto';
 import Restaurant from '../restaurants/entities/restaurants.entity';
-import { NotFoundError, UnAuthorizedError } from '../errors';
+import {
+  AlreadyPickedUpError,
+  NotFoundError,
+  UnAuthorizedError,
+} from '../errors';
 import { OrderItem } from './entities/order-item.entity';
 import Dish from '../restaurants/entities/dish.entity';
 import { GetOrdersInput } from './dtos/get-orders.dto';
 import { OrderStatus, UserRole } from '../enums';
 import { GetOrderInput } from './dtos/get-order.dto';
 import { EditOrderInput } from './dtos/edit-order.dto';
+import {
+  NEW_COOKED_ORDER,
+  NEW_ORDER_UPDATES,
+  NEW_PENDING_ORDER,
+  PUB_SUB,
+} from '../common/constants';
+import { PubSub } from 'graphql-subscriptions';
+import { TakeOrderInput } from './dtos/take-order.dto';
 
 @Injectable()
 export class OrdersService {
@@ -24,6 +36,8 @@ export class OrdersService {
     private readonly restaurantRepository: Repository<Restaurant>,
     @InjectRepository(Dish)
     private readonly dishRepository: Repository<Dish>,
+    @Inject(PUB_SUB)
+    private readonly pubSub: PubSub,
   ) {}
 
   async createOrder(customer: User, createOrderInput: CreateOrderInput) {
@@ -72,7 +86,10 @@ export class OrdersService {
       total: totalOrderPrice,
     });
 
-    await this.ordersRepository.save(newOrder);
+    const createdOrder = await this.ordersRepository.save(newOrder);
+    await this.pubSub.publish(NEW_PENDING_ORDER, {
+      newPendingOrder: { ...createdOrder, restaurant: findRestaurant },
+    });
   }
 
   async getOrders(user: User, { status }: GetOrdersInput): Promise<Order[]> {
@@ -140,6 +157,10 @@ export class OrdersService {
   async editOrder(user: User, editOrderInput: EditOrderInput) {
     const findOrder = await this.getOrderIfRelatedUser(user, editOrderInput.id);
 
+    if (editOrderInput.status === OrderStatus.Pending) {
+      throw new UnAuthorizedError();
+    }
+
     if (
       user.role !== UserRole.OWNER &&
       (editOrderInput.status === OrderStatus.Cooking ||
@@ -157,6 +178,31 @@ export class OrdersService {
     }
 
     findOrder.status = editOrderInput.status;
-    await this.ordersRepository.save(findOrder);
+    const editedOrder = await this.ordersRepository.save(findOrder);
+
+    if (editOrderInput.status === OrderStatus.Cooked) {
+      await this.pubSub.publish(NEW_COOKED_ORDER, {
+        cookedOrder: editedOrder,
+      });
+    }
+
+    await this.pubSub.publish(NEW_ORDER_UPDATES, {
+      orderUpdates: editedOrder,
+    });
+  }
+
+  async takeOrder(driver: User, takeOrderInput: TakeOrderInput): Promise<void> {
+    const findOrder = await this.ordersRepository.findOne(takeOrderInput.id);
+
+    if (!findOrder) throw new NotFoundError();
+    if (findOrder.driverId) throw new AlreadyPickedUpError();
+
+    findOrder.status = OrderStatus.PickedUp;
+    findOrder.driver = driver;
+    await this.ordersRepository.update(findOrder.id, {
+      driver: findOrder.driver,
+      status: OrderStatus.PickedUp,
+    });
+    await this.pubSub.publish(NEW_ORDER_UPDATES, { orderUpdates: findOrder });
   }
 }

@@ -20,10 +20,10 @@ export default class Order extends CoreEntity {
   @ManyToOne(
     () => User,
     user => user.orders,
-    { onDelete: 'SET NULL', nullable: true },
+    { onDelete: 'SET NULL', nullable: true, lazy: true },
   )
   @Field(() => User, { nullable: true })
-  customer?: User;
+  customer?: Promise<User> | User;
 
   @RelationId((order: Order) => order.customer)
   customerId?: string;

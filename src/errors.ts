@@ -48,3 +48,9 @@ export class NotFoundError extends CustomError {
     super('NOT_FOUND', 'Not found Resource');
   }
 }
+
+export class AlreadyPickedUpError extends CustomError {
+  constructor() {
+    super('ALREADY_PICKED_UP', 'This order Already picked up');
+  }
+}
