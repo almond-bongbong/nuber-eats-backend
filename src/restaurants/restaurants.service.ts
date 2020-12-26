@@ -148,6 +148,9 @@ export class RestaurantsService {
       where: {
         category: findCategory,
       },
+      order: {
+        isPromoted: 'DESC',
+      },
       skip: (findCategoryInput.page - 1) * 25,
       take: 25,
     });
@@ -163,6 +166,9 @@ export class RestaurantsService {
     return this.restaurantRepository.findAndCount({
       skip: (restaurantsInput.page - 1) * 25,
       take: 25,
+      order: {
+        isPromoted: 'DESC',
+      },
     });
   }
 

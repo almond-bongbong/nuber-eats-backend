@@ -57,4 +57,12 @@ export default class Restaurant extends CoreEntity {
   )
   @Field(() => [Order], { nullable: true })
   orders?: Order[];
+
+  @Column({ default: false })
+  @Field(() => Boolean)
+  isPromoted: boolean;
+
+  @Column({ nullable: true })
+  @Field(() => Date, { nullable: true })
+  promotedUntil?: Date;
 }

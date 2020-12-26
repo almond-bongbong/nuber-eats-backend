@@ -7,6 +7,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 import Restaurant from '../../restaurants/entities/restaurants.entity';
 import Order from '../../orders/entities/order.entity';
+import Payment from '../../payments/entities/payment.entity';
 
 @Entity()
 @ObjectType()
@@ -45,6 +46,14 @@ export default class User extends CoreEntity {
   )
   @Field(() => [Order], { nullable: true })
   orders?: Order[];
+
+  @OneToMany(
+    () => Payment,
+    payment => payment.user,
+    { nullable: true, lazy: true },
+  )
+  @Field(() => [Payment], { nullable: true })
+  payments?: Payment[];
 
   @OneToMany(
     () => Order,
