@@ -27,6 +27,7 @@ export class AuthGuard implements CanActivate {
     let currentUser: User = null;
 
     if (token) {
+      console.log(token);
       try {
         const verified = this.jwtService.verify(token);
 

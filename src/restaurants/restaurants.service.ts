@@ -163,9 +163,10 @@ export class RestaurantsService {
   allRestaurants(
     restaurantsInput: RestaurantsInput,
   ): Promise<[Restaurant[], number]> {
+    const PAGE_SIZE = 25;
     return this.restaurantRepository.findAndCount({
-      skip: (restaurantsInput.page - 1) * 25,
-      take: 25,
+      skip: (restaurantsInput.page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
       order: {
         isPromoted: 'DESC',
       },
