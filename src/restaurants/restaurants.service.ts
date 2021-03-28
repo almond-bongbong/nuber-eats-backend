@@ -173,6 +173,12 @@ export class RestaurantsService {
     });
   }
 
+  myRestaurants(currentUser: User): Promise<Restaurant[]> {
+    return this.restaurantRepository.find({
+      owner: currentUser,
+    });
+  }
+
   findRestaurantById(restaurantInput: RestaurantInput) {
     return this.restaurantRepository.findOne(restaurantInput.restaurantId, {
       relations: ['menu'],
