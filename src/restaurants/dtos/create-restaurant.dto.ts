@@ -17,4 +17,7 @@ export class CreateRestaurantInput extends PickType(
 }
 
 @ObjectType()
-export class CreateRestaurantOutput extends CoreOutput {}
+export class CreateRestaurantOutput extends CoreOutput {
+  @Field(() => String)
+  restaurantId?: string;
+}

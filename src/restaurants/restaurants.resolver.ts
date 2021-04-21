@@ -48,12 +48,13 @@ export class RestaurantsResolver {
     @Args('input') createRestaurantInput: CreateRestaurantInput,
   ): Promise<CreateRestaurantOutput> {
     try {
-      await this.restaurantsService.createRestaurant(
+      const newRestaurant = await this.restaurantsService.createRestaurant(
         currentUser,
         createRestaurantInput,
       );
       return {
         ok: true,
+        restaurantId: newRestaurant.id,
       };
     } catch (error) {
       console.log(error);
