@@ -179,6 +179,17 @@ export class RestaurantsService {
     });
   }
 
+  async getMyRestaurant(
+    currentUser: User,
+    restaurantId: string,
+  ): Promise<Restaurant> {
+    const findRestaurant = await this.getRestaurantIfOwn(
+      currentUser,
+      restaurantId,
+    );
+    return findRestaurant;
+  }
+
   findRestaurantById(restaurantInput: RestaurantInput) {
     return this.restaurantRepository.findOne(restaurantInput.restaurantId, {
       relations: ['menu'],

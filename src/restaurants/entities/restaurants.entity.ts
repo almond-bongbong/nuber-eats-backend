@@ -47,7 +47,7 @@ export default class Restaurant extends CoreEntity {
     () => Dish,
     (dish: Dish) => dish.restaurant,
   )
-  @Field(() => [Dish])
+  @Field(() => [Dish], { defaultValue: [] })
   menu: Dish[];
 
   @OneToMany(
