@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Restaurant from './entities/restaurants.entity';
-import { ILike, Repository } from 'typeorm';
+import { FindOneOptions, ILike, Repository } from 'typeorm';
 import { CreateRestaurantInput } from './dtos/create-restaurant.dto';
 import User from '../users/entities/user.entity';
 import { EditRestaurantInput } from './dtos/edit-restaurant.dto';
@@ -50,9 +50,11 @@ export class RestaurantsService {
   private async getRestaurantIfOwn(
     owner: User,
     restaurantId: string,
+    options?: FindOneOptions<Restaurant>,
   ): Promise<Restaurant> {
     const findRestaurant = await this.restaurantRepository.findOne(
       restaurantId,
+      options,
     );
     if (!findRestaurant) throw new NotFoundError();
     if (findRestaurant.ownerId !== owner.id) throw new UnAuthorizedError();
@@ -179,15 +181,13 @@ export class RestaurantsService {
     });
   }
 
-  async getMyRestaurant(
+  getMyRestaurant(
     currentUser: User,
     restaurantId: string,
   ): Promise<Restaurant> {
-    const findRestaurant = await this.getRestaurantIfOwn(
-      currentUser,
-      restaurantId,
-    );
-    return findRestaurant;
+    return this.getRestaurantIfOwn(currentUser, restaurantId, {
+      relations: ['menu'],
+    });
   }
 
   findRestaurantById(restaurantInput: RestaurantInput) {
