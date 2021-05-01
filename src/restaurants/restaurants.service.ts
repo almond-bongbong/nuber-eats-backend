@@ -186,7 +186,7 @@ export class RestaurantsService {
     restaurantId: string,
   ): Promise<Restaurant> {
     return this.getRestaurantIfOwn(currentUser, restaurantId, {
-      relations: ['menu'],
+      relations: ['menu', 'orders'],
     });
   }
 
