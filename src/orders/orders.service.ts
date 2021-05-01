@@ -40,7 +40,10 @@ export class OrdersService {
     private readonly pubSub: PubSub,
   ) {}
 
-  async createOrder(customer: User, createOrderInput: CreateOrderInput) {
+  async createOrder(
+    customer: User,
+    createOrderInput: CreateOrderInput,
+  ): Promise<Order> {
     const findRestaurant = await this.restaurantRepository.findOne(
       createOrderInput.restaurantId,
     );
@@ -52,7 +55,7 @@ export class OrdersService {
       const findDish = await this.dishRepository.findOneOrFail(item.dishId);
       let optionPrice = 0;
 
-      item.options.forEach(option => {
+      item.options?.forEach(option => {
         const findDishOption = findDish.options.find(
           dishOption => dishOption.name === option.name,
         );
@@ -68,7 +71,6 @@ export class OrdersService {
         }
       });
 
-      console.log(findDish.price + optionPrice);
       totalOrderPrice += findDish.price + optionPrice;
 
       const newOrderItem = this.orderItemRepository.create({
@@ -90,6 +92,8 @@ export class OrdersService {
     await this.pubSub.publish(NEW_PENDING_ORDER, {
       newPendingOrder: { ...createdOrder, restaurant: findRestaurant },
     });
+
+    return createdOrder;
   }
 
   async getOrders(user: User, { status }: GetOrdersInput): Promise<Order[]> {

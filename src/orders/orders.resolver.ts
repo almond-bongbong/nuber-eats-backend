@@ -33,9 +33,13 @@ export class OrdersResolver {
     @Args('input') createOrderInput: CreateOrderInput,
   ): Promise<CreateOrderOutput> {
     try {
-      await this.ordersService.createOrder(currentUser, createOrderInput);
+      const newOrder = await this.ordersService.createOrder(
+        currentUser,
+        createOrderInput,
+      );
       return {
         ok: true,
+        orderId: newOrder.id,
       };
     } catch (error) {
       return {

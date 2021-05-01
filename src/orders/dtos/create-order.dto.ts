@@ -8,7 +8,7 @@ class CreateOrderItemInput {
   dishId: string;
 
   @Field(() => [OrderItemOption], { nullable: true })
-  options?: OrderItemOption[];
+  options?: OrderItemOption[] | null;
 }
 
 @InputType()
@@ -21,4 +21,7 @@ export class CreateOrderInput {
 }
 
 @ObjectType()
-export class CreateOrderOutput extends CoreOutput {}
+export class CreateOrderOutput extends CoreOutput {
+  @Field(() => String, { nullable: true })
+  orderId?: string;
+}
