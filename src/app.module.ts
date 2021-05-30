@@ -69,6 +69,7 @@ const isProduction = process.env.NODE_ENV === 'production';
     GraphQLModule.forRoot({
       installSubscriptionHandlers: true,
       autoSchemaFile: true,
+      playground: !isProduction,
       context: ({ req, connection }) => {
         if (req) return { token: req.headers.authorization };
         if (connection) return { token: connection.context.Authorization };
