@@ -155,11 +155,12 @@ export class OrdersService {
     return this.getOrderIfRelatedUser(user, getOrderInput.id, [
       'items',
       'items.dish',
+      'driver',
     ]);
   }
 
   async editOrder(user: User, editOrderInput: EditOrderInput) {
-    const findOrder = await this.getOrderIfRelatedUser(user, editOrderInput.id);
+    const findOrder = await this.getOrderIfRelatedUser(user, editOrderInput.id, ['driver']);
 
     if (editOrderInput.status === OrderStatus.Pending) {
       throw new UnAuthorizedError();
@@ -196,16 +197,16 @@ export class OrdersService {
   }
 
   async takeOrder(driver: User, takeOrderInput: TakeOrderInput): Promise<void> {
-    const findOrder = await this.ordersRepository.findOne(takeOrderInput.id);
+    const findOrder = await this.ordersRepository.findOne(takeOrderInput.id, {
+      relations: ['restaurant'],
+    });
 
     if (!findOrder) throw new NotFoundError();
     if (findOrder.driverId) throw new AlreadyPickedUpError();
 
-    findOrder.status = OrderStatus.PickedUp;
     findOrder.driver = driver;
     await this.ordersRepository.update(findOrder.id, {
       driver: findOrder.driver,
-      status: OrderStatus.PickedUp,
     });
     await this.pubSub.publish(NEW_ORDER_UPDATES, { orderUpdates: findOrder });
   }
