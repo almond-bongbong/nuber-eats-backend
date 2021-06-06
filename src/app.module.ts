@@ -57,7 +57,7 @@ const isProduction = process.env.NODE_ENV === 'production';
             password: process.env.DB_PASSWORD,
             database: process.env.DB_DATABASE,
           }),
-      synchronize: isDevelopment,
+      synchronize: true,
       logging: isDevelopment,
       entities: [
         User,
